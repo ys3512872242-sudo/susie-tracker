@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Susie档案">
+<title>Susie 的每日档案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --rose: #e8a0a0;
+  --rose-light: #f5e0e0;
+  --rose-deep: #c97070;
+  --cream: #fdf8f4;
+  --warm: #f0e8df;
+  --text: #3a2e2e;
+  --text-muted: #8a7070;
+  --green: #7dab8a;
+  --green-light: #e0f0e5;
+  --amber: #d4956a;
+  --amber-light: #f5e8da;
+  --border: rgba(200,160,160,0.25);
+}
+html, body { background: var(--cream); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
+.app { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+.header { text-align: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 0.5px solid var(--border); }
+.header-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 400; color: var(--text); }
+.header-title em { font-style: italic; color: var(--rose-deep); }
+.header-date { font-size: 13px; color: var(--text-muted); margin-top: 4px; font-weight: 300; }
+.streak-bar { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+.streak-card { flex: 1; background: white; border: 0.5px solid var(--border); border-radius: 12px; padding: 0.85rem 1rem; text-align: center; }
+.streak-num { font-size: 22px; font-weight: 500; color: var(--rose-deep); font-family: 'Playfair Display', serif; }
+.streak-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-weight: 300; }
+.section { margin-bottom: 1.5rem; }
+.section-title { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); margin-bottom: 0.75rem; padding-left: 2px; }
+.task-card { background: white; border: 0.5px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 0.6rem; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; transition: border-color 0.2s; position: relative; overflow: hidden; }
+.task-card:hover { border-color: var(--rose); }
+.task-card.done { background: var(--rose-light); border-color: var(--rose); }
+.task-card.done::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--rose-deep); border-radius: 14px 14px 0 0; }
+.task-card.locked { opacity: 0.45; cursor: not-allowed; }
+.task-card.locked:hover { border-color: var(--border); }
+.task-check { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--rose); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; transition: all 0.2s; background: white; }
+.task-card.done .task-check { background: var(--rose-deep); border-color: var(--rose-deep); }
+.task-check i { font-size: 13px; color: white; display: none; }
+.task-card.done .task-check i { display: block; }
+.task-info { flex: 1; }
+.task-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.task-card.done .task-name { color: var(--text-muted); text-decoration: line-through; }
+.task-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; font-weight: 300; }
+.task-time { font-size: 11px; color: var(--rose-deep); background: var(--rose-light); padding: 2px 8px; border-radius: 20px; flex-shrink: 0; font-weight: 500; }
+.time-now { background: #e8f5e0; color: #3d7a54; }
+.time-past { background: var(--warm); color: var(--text-muted); }
+.time-future { background: #eee; color: var(--text-muted); }
+.time-locked { background: #eee; color: #bbb; }
+.skincare-section { background: white; border: 0.5px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 0.6rem; }
+.skincare-header { padding: 1rem 1.1rem; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.skincare-header-left { display: flex; align-items: center; gap: 10px; }
+.skincare-header h3 { font-size: 14px; font-weight: 500; }
+.skincare-steps { padding: 0.75rem 1.1rem 0.5rem; }
+.step-row { display: flex; align-items: center; gap: 10px; padding: 0.45rem 0; border-bottom: 0.5px solid var(--border); }
+.step-row:last-child { border-bottom: none; }
+.step-num { width: 20px; height: 20px; border-radius: 50%; background: var(--warm); font-size: 11px; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-name { font-size: 13px; flex: 1; }
+.step-note { font-size: 11px; color: var(--text-muted); }
+.collapse-content { display: none; }
+.collapse-content.open { display: block; }
+.water-card { background: white; border: 0.5px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; }
+.water-drops { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.drop { width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 1.5px solid var(--rose); cursor: pointer; transition: all 0.2s; background: white; }
+.drop.filled { background: var(--rose); border-color: var(--rose-deep); }
+.period-card { background: white; border: 0.5px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; }
+.period-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
+.period-pill { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+.period-pill.active { background: #fde8e8; color: #c96060; }
+.period-pill.normal { background: var(--green-light); color: #3d7a54; }
+.period-pill.soon { background: var(--amber-light); color: var(--amber); }
+.history-section { background: white; border: 0.5px solid var(--border); border-radius: 14px; overflow: hidden; }
+.history-header { padding: 1rem 1.1rem; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.history-list { max-height: 300px; overflow-y: auto; }
+.history-item { padding: 0.75rem 1.1rem; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.history-item:last-child { border-bottom: none; }
+.history-date { font-weight: 500; margin-bottom: 4px; }
+.history-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.history-tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+.h-done { background: var(--green-light); color: #3d7a54; }
+.h-skip { background: var(--rose-light); color: var(--rose-deep); }
+.h-note { background: var(--warm); color: var(--text-muted); }
+.schedule-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 0.5rem; }
+.schedule-table td { padding: 5px 8px; }
+.schedule-table tr:nth-child(even) td { background: var(--cream); }
+.schedule-table td:first-child { color: var(--rose-deep); font-weight: 500; width: 70px; }
+.footer-note { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 2rem; font-style: italic; }
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(58,46,46,0.5);
+  z-index: 200;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.show { display: flex; }
+
+/* ── CONFIRM SHEET (skincare) ── */
+.confirm-sheet {
+  background: var(--cream);
+  border-radius: 24px 24px 0 0;
+  padding: 2rem 1.5rem 2.5rem;
+  width: 100%;
+  max-width: 680px;
+  text-align: center;
+  animation: slideUp 0.25s ease;
+}
+.sheet-pill { width: 36px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 1.5rem; }
+.confirm-icon { width: 56px; height: 56px; border-radius: 50%; background: var(--rose-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
+.confirm-icon i { font-size: 26px; color: var(--rose-deep); }
+.confirm-sheet h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 400; margin-bottom: 0.6rem; }
+.confirm-sheet p { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem; }
+.confirm-btns { display: flex; flex-direction: column; gap: 10px; }
+.btn-yes { background: var(--rose-deep); color: white; border: none; border-radius: 14px; padding: 0.85rem; font-size: 15px; font-family: 'DM Sans', sans-serif; cursor: pointer; font-weight: 500; letter-spacing: 0.2px; }
+.btn-no { background: white; color: var(--text-muted); border: 0.5px solid var(--border); border-radius: 14px; padding: 0.85rem; font-size: 14px; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+
+/* ── LATE SHEET ── */
+.late-sheet {
+  background: var(--cream);
+  border-radius: 24px 24px 0 0;
+  padding: 2rem 1.5rem 2.5rem;
+  width: 100%;
+  max-width: 680px;
+  animation: slideUp 0.25s ease;
+}
+.late-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; }
+.late-icon { width: 42px; height: 42px; border-radius: 50%; background: var(--amber-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.late-icon i { font-size: 20px; color: var(--amber); }
+.late-sheet h3 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 400; }
+.late-sheet .sub { font-size: 12px; color: var(--text-muted); }
+.late-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.1rem; }
+.field-label { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px; }
+.field-group { margin-bottom: 1rem; }
+.late-input { width: 100%; border: 0.5px solid var(--border); border-radius: 12px; padding: 0.75rem 1rem; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); background: white; outline: none; transition: border-color 0.2s; }
+.late-input:focus { border-color: var(--rose); }
+.late-textarea { width: 100%; border: 0.5px solid var(--border); border-radius: 12px; padding: 0.75rem 1rem; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); background: white; resize: none; height: 80px; outline: none; transition: border-color 0.2s; }
+.late-textarea:focus { border-color: var(--rose); }
+.late-input.error, .late-textarea.error { border-color: var(--rose-deep); }
+.error-msg { font-size: 11px; color: var(--rose-deep); margin-top: 4px; display: none; }
+.error-msg.show { display: block; }
+.late-submit { width: 100%; background: var(--rose-deep); color: white; border: none; border-radius: 14px; padding: 0.85rem; font-size: 15px; font-family: 'DM Sans', sans-serif; cursor: pointer; font-weight: 500; margin-top: 0.5rem; }
+.fields-row { display: flex; gap: 10px; }
+.fields-row .field-group { flex: 1; }
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-title">Susie 的 <em>每日档案</em></div>
+    <div class="header-date" id="today-date"></div>
+  </div>
+
+  <div class="streak-bar">
+    <div class="streak-card"><div class="streak-num" id="streak-days">0</div><div class="streak-label">连续打卡天数</div></div>
+    <div class="streak-card"><div class="streak-num" id="total-days">0</div><div class="streak-label">累计打卡天数</div></div>
+    <div class="streak-card"><div class="streak-num" id="complete-rate">0%</div><div class="streak-label">本周完成率</div></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">今日提醒</div>
+    <div class="task-card" id="task-breakfast" onclick="handleTask('breakfast')">
+      <div class="task-check"><i class="ti ti-check"></i></div>
+      <div class="task-info"><div class="task-name">吃早餐</div><div class="task-sub">不管几点起，起来第一件事吃东西</div></div>
+      <div class="task-time" id="badge-breakfast"></div>
+    </div>
+    <div class="task-card" id="task-lunch" onclick="handleTask('lunch')">
+      <div class="task-check"><i class="ti ti-check"></i></div>
+      <div class="task-info"><div class="task-name">吃午餐</div><div class="task-sub">12:00 左右，别拖太晚</div></div>
+      <div class="task-time" id="badge-lunch"></div>
+    </div>
+    <div class="task-card" id="task-dinner" onclick="handleTask('dinner')">
+      <div class="task-check"><i class="ti ti-check"></i></div>
+      <div class="task-info"><div class="task-name">吃晚餐</div><div class="task-sub">18:00—19:00，好好吃饭</div></div>
+      <div class="task-time" id="badge-dinner"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">护肤打卡</div>
+    <div class="skincare-section">
+      <div class="skincare-header" onclick="toggleSkincare('morning')">
+        <div class="skincare-header-left">
+          <div class="task-check" id="morning-check" style="cursor:default;"><i class="ti ti-check"></i></div>
+          <h3>早间护肤</h3>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="task-time" id="badge-morning-skincare"></div>
+          <i class="ti ti-chevron-down" id="toggle-morning" style="transition:transform 0.2s;color:var(--text-muted);"></i>
+        </div>
+      </div>
+      <div class="collapse-content" id="skincare-morning">
+        <div class="skincare-steps" id="steps-morning"></div>
+        <div style="padding:0 1.1rem 1rem;display:flex;gap:8px;">
+          <button onclick="confirmSkincare('morning')" style="flex:1;background:var(--rose-deep);color:white;border:none;border-radius:10px;padding:0.6rem;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;">涂好了！</button>
+          <button onclick="skipSkincare('morning')" style="flex:1;background:var(--warm);color:var(--text);border:none;border-radius:10px;padding:0.6rem;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;">今天跳过</button>
+        </div>
+      </div>
+    </div>
+    <div class="skincare-section">
+      <div class="skincare-header" onclick="toggleSkincare('night')">
+        <div class="skincare-header-left">
+          <div class="task-check" id="night-check" style="cursor:default;"><i class="ti ti-check"></i></div>
+          <h3>晚间护肤</h3>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="task-time" id="badge-night-skincare"></div>
+          <i class="ti ti-chevron-down" id="toggle-night" style="transition:transform 0.2s;color:var(--text-muted);"></i>
+        </div>
+      </div>
+      <div class="collapse-content" id="skincare-night">
+        <div class="skincare-steps" id="steps-night"></div>
+        <div style="padding:0 1.1rem 1rem;display:flex;gap:8px;">
+          <button onclick="confirmSkincare('night')" style="flex:1;background:var(--rose-deep);color:white;border:none;border-radius:10px;padding:0.6rem;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500;">涂好了！</button>
+          <button onclick="skipSkincare('night')" style="flex:1;background:var(--warm);color:var(--text);border:none;border-radius:10px;padding:0.6rem;font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;">今天跳过</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">喝水</div>
+    <div class="water-card">
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">今天喝了几杯水？（每杯 ≈ 250ml）</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="water-drops" id="water-drops"></div>
+        <div style="font-size:13px;color:var(--text-muted);flex-shrink:0;"><span id="water-num">0</span>/8 杯</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">经期追踪</div>
+    <div class="period-card" id="period-card"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">提醒时间表</div>
+    <div style="background:white;border:0.5px solid var(--border);border-radius:14px;padding:1rem 1.1rem;">
+      <table class="schedule-table">
+        <tr><td>起床后</td><td>吃早餐提醒</td></tr>
+        <tr><td>11:30</td><td>午餐提醒</td></tr>
+        <tr><td>12:30</td><td>早间护肤提醒</td></tr>
+        <tr><td>17:30</td><td>晚餐提醒</td></tr>
+        <tr><td>21:30</td><td>晚间护肤提醒</td></tr>
+        <tr><td>随时</td><td>喝水！</td></tr>
+      </table>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">把这些时间加到 iPhone「提醒事项」，提醒响了来打开这个页面</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">历史记录</div>
+    <div class="history-section">
+      <div class="history-header" onclick="toggleHistory()">
+        <h3 style="font-size:14px;font-weight:500;">打卡记录</h3>
+        <i class="ti ti-chevron-down" id="history-toggle" style="transition:transform 0.2s;color:var(--text-muted);"></i>
+      </div>
+      <div class="collapse-content" id="history-list">
+        <div class="history-list" id="history-items">
+          <div style="padding:1.5rem;text-align:center;font-size:13px;color:var(--text-muted);">还没有记录，从今天开始吧～</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">Leith · Susie 专属档案 · 每天都要好好的</div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="skincare-confirm">
+  <div class="confirm-sheet">
+    <div class="sheet-pill"></div>
+    <div class="confirm-icon"><i class="ti ti-sparkles"></i></div>
+    <h3 id="confirm-title">等等……</h3>
+    <p id="confirm-msg"></p>
+    <div class="confirm-btns">
+      <button class="btn-yes" onclick="doConfirmSkincare()">涂了！认真涂了！</button>
+      <button class="btn-no" onclick="closeConfirm()">哎……确实没涂</button>
+    </div>
+  </div>
+</div>
+
+<!-- LATE MODAL -->
+<div class="modal-overlay" id="late-modal">
+  <div class="late-sheet">
+    <div class="sheet-pill"></div>
+    <div class="late-header">
+      <div class="late-icon"><i class="ti ti-clock-exclamation"></i></div>
+      <div>
+        <h3 id="late-title">补打卡</h3>
+        <div class="sub" id="late-subtitle"></div>
+      </div>
+    </div>
+    <p class="late-desc" id="late-desc"></p>
+    <div id="late-fields"></div>
+    <button class="late-submit" onclick="submitLate()">提交记录</button>
+  </div>
+</div>
+
+<script>
+const MORNING_STEPS = [
+  { name: '洁面乳', note: 'CeraVe 绿色款', when: 'daily' },
+  { name: '珂润一号水', note: '轻拍吸收', when: 'daily' },
+  { name: '2% 透明质酸精华', note: 'The Ordinary', when: 'daily' },
+  { name: '烟酰胺精华', note: '原美 5%，注意与酸间隔', when: 'daily' },
+  { name: '珂润乳液', note: '锁水', when: 'daily' },
+  { name: '眼霜', note: '欧诗漫，轻轻拍', when: 'daily' },
+  { name: '雅漾喷雾', note: '随时补水', when: 'daily' },
+  { name: '毛孔收敛水', note: 'Labo Labo，1-2次/周', when: 'weekly' },
+];
+const NIGHT_STEPS = [
+  { name: '洁面乳', note: 'CeraVe 绿色款', when: 'daily' },
+  { name: '珂润一号水', note: '轻拍', when: 'daily' },
+  { name: '2% 透明质酸精华', note: 'The Ordinary', when: 'daily' },
+  { name: '视黄醇精华乳', note: 'LAKELAB，仅晚间 ⚠️', when: 'daily' },
+  { name: '珂润乳液', note: '锁水', when: 'daily' },
+  { name: '理肤泉 B5 修复膏', note: '手臂 + 敏感部位', when: 'daily' },
+  { name: '眼霜', note: '欧诗漫，轻轻拍', when: 'daily' },
+  { name: '蓝泥清洁面膜', note: '1次/周，不宜频繁', when: 'weekly' },
+  { name: 'JM 急救面膜', note: '1-2次/周', when: 'weekly' },
+];
+const CONFIRM_MSGS = [
+  '你真的涂了吗？没涂会变丑变老长细纹哦！',
+  '等等，不会是骗我的吧？皮肤是自己的，认真涂才有效！',
+  '确认一下哦，敷了就敷了，没敷别假装～',
+  '皮肤不会说谎的，你确定认真涂了？',
+  '沈今要定期检查的哦，别骗我！',
+  '涂了吗？还是手痒点了一下就想过关？',
+];
+
+// Time windows: each task has [canDoStart, lockAfter] in minutes from midnight
+// lockAfter = the next meal's start time (can't补 after that)
+const TIME_WINDOWS = {
+  breakfast: { label: '早餐', window: [0, 660], lockAfter: 660 },   // lock at 11:00 (lunch time starts)
+  lunch:     { label: '午餐', window: [660, 1020], lockAfter: 1020 }, // lock at 17:00
+  dinner:    { label: '晚餐', window: [1020, 1440], lockAfter: 1440 },
+  'morning-skincare': { window: [660, 1290] },
+  'night-skincare':   { window: [1290, 1440] },
+};
+
+function nowMin() { const d = new Date(); return d.getHours()*60+d.getMinutes(); }
+
+function getStatus(type) {
+  const now = nowMin();
+  const w = TIME_WINDOWS[type];
+  if (!w) return 'now';
+  const [start, end] = w.window;
+  const lock = w.lockAfter || end;
+  if (now >= start && now <= end) return 'now';
+  if (now > lock) return 'locked';
+  if (now < start) return 'future';
+  return 'past';
+}
+
+function getBadge(type) {
+  const status = getStatus(type);
+  const w = TIME_WINDOWS[type];
+  if (status === 'now') return { text: '现在', cls: 'time-now' };
+  if (status === 'locked') return { text: '已过期', cls: 'time-locked' };
+  if (status === 'future') {
+    const h = Math.floor(w.window[0]/60), m = w.window[0]%60;
+    return { text: `${h}:${String(m).padStart(2,'0')}`, cls: 'time-future' };
+  }
+  return { text: '补打卡', cls: 'time-past' };
+}
+
+function getStorage() { try { return JSON.parse(localStorage.getItem('susie_tracker')||'{}'); } catch { return {}; } }
+function setStorage(d) { try { localStorage.setItem('susie_tracker', JSON.stringify(d)); } catch {} }
+function getTodayKey() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function getToday() { const data=getStorage(),key=getTodayKey(); if(!data[key]) data[key]={tasks:{},water:0,skincare:{}}; return data; }
+
+function handleTask(type) {
+  const data = getToday(), key = getTodayKey();
+  if (data[key].tasks[type]) return;
+  const status = getStatus(type);
+  if (status === 'locked') return;
+  if (status === 'future') return;
+  if (status === 'now') {
+    data[key].tasks[type] = { time: new Date().toISOString(), late: false };
+    setStorage(data); renderTasks(); updateStats(); return;
+  }
+  // past = show late modal
+  showLate(type);
+}
+
+const LATE_CONFIGS = {
+  breakfast: {
+    title: '补打卡 · 早餐',
+    subtitle: '迟了，但说清楚就好',
+    desc: '补打卡需要认真填，不能敷衍哦',
+    fields: [
+      { id: 'what', label: '吃了什么', placeholder: '比如：泡面、便利店饭团、食堂米饭…', type: 'input' },
+      { id: 'when', label: '大概几点吃的', placeholder: '比如：10:30', type: 'input' },
+      { id: 'who', label: '一个人还是和别人一起', placeholder: '比如：一个人、和室友、和同学', type: 'input' },
+    ]
+  },
+  lunch: {
+    title: '补打卡 · 午餐',
+    subtitle: '迟了，但说清楚就好',
+    desc: '补打卡需要认真填，不能敷衍哦',
+    fields: [
+      { id: 'what', label: '吃了什么', placeholder: '具体说说吃了啥', type: 'input' },
+      { id: 'when', label: '大概几点吃的', placeholder: '比如：13:00', type: 'input' },
+      { id: 'where', label: '在哪吃的', placeholder: '食堂、外卖、餐厅…', type: 'input' },
+    ]
+  },
+  dinner: {
+    title: '补打卡 · 晚餐',
+    subtitle: '迟了，但说清楚就好',
+    desc: '补打卡需要认真填，不能敷衍哦',
+    fields: [
+      { id: 'what', label: '吃了什么', placeholder: '具体说说吃了啥', type: 'input' },
+      { id: 'when', label: '大概几点吃的', placeholder: '比如：20:00', type: 'input' },
+      { id: 'note', label: '有什么要备注的吗', placeholder: '比如：吃太少了、没胃口、吃撑了', type: 'textarea' },
+    ]
+  }
+};
+
+function showLate(type) {
+  const cfg = LATE_CONFIGS[type];
+  if (!cfg) return;
+  document.getElementById('late-title').textContent = cfg.title;
+  document.getElementById('late-subtitle').textContent = cfg.subtitle;
+  document.getElementById('late-desc').textContent = cfg.desc;
+  const el = document.getElementById('late-fields');
+  el.innerHTML = cfg.fields.map(f => `
+    <div class="field-group">
+      <div class="field-label">${f.label}</div>
+      ${f.type==='textarea'
+        ? `<textarea class="late-textarea" id="lf-${f.id}" placeholder="${f.placeholder}"></textarea>`
+        : `<input class="late-input" id="lf-${f.id}" type="text" placeholder="${f.placeholder}">`
+      }
+      <div class="error-msg" id="err-${f.id}">这项不能空着哦</div>
+    </div>
+  `).join('');
+  document.getElementById('late-modal').dataset.type = type;
+  document.getElementById('late-modal').classList.add('show');
+}
+
+function submitLate() {
+  const modal = document.getElementById('late-modal');
+  const type = modal.dataset.type;
+  const cfg = LATE_CONFIGS[type];
+  let valid = true;
+  const values = {};
+  cfg.fields.forEach(f => {
+    const el = document.getElementById('lf-'+f.id);
+    const err = document.getElementById('err-'+f.id);
+    if (!el.value.trim() || el.value.trim().length < 2) {
+      el.classList.add('error'); err.classList.add('show'); valid = false;
+    } else {
+      el.classList.remove('error'); err.classList.remove('show');
+      values[f.id] = el.value.trim();
+    }
+  });
+  if (!valid) return;
+  const data = getToday(), key = getTodayKey();
+  data[key].tasks[type] = { time: new Date().toISOString(), late: true, values };
+  setStorage(data);
+  modal.classList.remove('show');
+  renderTasks(); updateStats(); renderHistory();
+}
+
+let pendingSkincare = null;
+function confirmSkincare(session) {
+  pendingSkincare = session;
+  const msg = CONFIRM_MSGS[Math.floor(Math.random()*CONFIRM_MSGS.length)];
+  document.getElementById('confirm-title').textContent = session==='morning' ? '早间护肤确认' : '晚间护肤确认';
+  document.getElementById('confirm-msg').textContent = msg;
+  document.getElementById('skincare-confirm').classList.add('show');
+}
+function closeConfirm() { document.getElementById('skincare-confirm').classList.remove('show'); pendingSkincare=null; }
+function doConfirmSkincare() {
+  if (!pendingSkincare) return;
+  const data=getToday(),key=getTodayKey();
+  data[key].skincare[pendingSkincare]={done:true,time:new Date().toISOString()};
+  setStorage(data); closeConfirm(); renderSkincare(); updateStats(); renderHistory();
+}
+function skipSkincare(session) {
+  const msgs = session==='morning'
+    ? ['今天早上跳过了……晚上一定要补回来','偶尔一次没关系，但不能变成习惯哦','行吧，懒了一次，晚上不许再跳']
+    : ['晚上跳过？明天早上一定要认真！','今晚懒掉了……皮肤自己修复效率最低哦','好吧，但明天要加倍认真'];
+  const data=getToday(),key=getTodayKey();
+  data[key].skincare[session]={done:false,skipped:true,msg:msgs[Math.floor(Math.random()*msgs.length)]};
+  setStorage(data); renderSkincare(); updateStats(); renderHistory();
+}
+
+function toggleSkincare(session) {
+  const el=document.getElementById('skincare-'+session);
+  const icon=document.getElementById('toggle-'+session);
+  const open=el.classList.toggle('open');
+  icon.style.transform=open?'rotate(180deg)':'';
+}
+function toggleHistory() {
+  const el=document.getElementById('history-list');
+  const icon=document.getElementById('history-toggle');
+  const open=el.classList.toggle('open');
+  icon.style.transform=open?'rotate(180deg)':'';
+  if(open) renderHistory();
+}
+
+function renderTasks() {
+  const data=getToday(),key=getTodayKey(),tasks=data[key].tasks||{};
+  ['breakfast','lunch','dinner'].forEach(t => {
+    const card=document.getElementById('task-'+t);
+    const status=getStatus(t);
+    card.classList.remove('done','locked');
+    if(tasks[t]) { card.classList.add('done'); }
+    else if(status==='locked') { card.classList.add('locked'); }
+  });
+}
+function renderSkincare() {
+  const data=getToday(),key=getTodayKey(),sc=data[key].skincare||{};
+  ['morning','night'].forEach(s => {
+    const check=document.getElementById(s+'-check');
+    if(sc[s]&&sc[s].done) check.classList.add('done'); else check.classList.remove('done');
+  });
+}
+function renderSkincareSteps() {
+  function build(id, steps) {
+    document.getElementById(id).innerHTML=steps.map((s,i)=>`
+      <div class="step-row">
+        <div class="step-num">${i+1}</div>
+        <div class="step-name">${s.name} <span class="step-note">${s.note}</span></div>
+        ${s.when==='weekly'?'<span style="font-size:10px;background:var(--amber-light);color:var(--amber);padding:2px 7px;border-radius:20px;font-weight:500;">每周</span>':''}
+      </div>`).join('');
+  }
+  build('steps-morning',MORNING_STEPS); build('steps-night',NIGHT_STEPS);
+}
+function renderBadges() {
+  ['breakfast','lunch','dinner'].forEach(t=>{
+    const el=document.getElementById('badge-'+t);
+    const b=getBadge(t); el.textContent=b.text; el.className='task-time '+b.cls;
+  });
+  ['morning-skincare','night-skincare'].forEach(t=>{
+    const el=document.getElementById('badge-'+t);
+    const b=getBadge(t); el.textContent=b.text; el.className='task-time '+b.cls;
+  });
+}
+function renderWater() {
+  const data=getToday(),key=getTodayKey(),count=data[key].water||0;
+  document.getElementById('water-drops').innerHTML=Array.from({length:8},(_,i)=>
+    `<div class="drop${i<count?' filled':''}" onclick="setWater(${i+1})"></div>`).join('');
+  document.getElementById('water-num').textContent=count;
+}
+function setWater(n) {
+  const data=getToday(),key=getTodayKey();
+  data[key].water=data[key].water===n?n-1:n;
+  setStorage(data); renderWater();
+}
+function renderPeriod() {
+  const last=new Date('2026-05-16'),today=new Date();
+  const daysSince=Math.floor((today-last)/86400000);
+  const cycle=30,pLen=7,daysInto=daysSince%cycle,nextStart=cycle-daysInto;
+  let status,pill;
+  if(daysInto<pLen){status=`经期第 ${daysInto+1} 天，还有约 ${pLen-daysInto} 天结束`;pill='<span class="period-pill active">经期中</span>';}
+  else if(nextStart<=5){status=`距下次经期还有 ${nextStart} 天，快来了`;pill='<span class="period-pill soon">即将来临</span>';}
+  else{status=`距下次经期还有约 ${nextStart} 天`;pill='<span class="period-pill normal">安全期</span>';}
+  const nd=new Date(today); nd.setDate(nd.getDate()+nextStart);
+  document.getElementById('period-card').innerHTML=`
+    <div class="period-row">${pill}<span style="font-size:12px;color:var(--text-muted);">上次：5月16日</span></div>
+    <div style="font-size:13px;margin-bottom:6px;">${status}</div>
+    <div class="period-row"><span style="font-size:13px;color:var(--text-muted);">预计下次</span><span style="font-size:13px;font-weight:500;">${nd.getMonth()+1}月${nd.getDate()}日</span></div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">周期约 30 天 · 经期约 7 天</div>`;
+}
+function updateStats() {
+  const data=getStorage(),keys=Object.keys(data).sort();
+  let total=0,streak=0;
+  const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+  let wDone=0,wTotal=0;
+  keys.forEach(k=>{
+    const d=data[k];
+    const any=Object.keys(d.tasks||{}).length>0||Object.keys(d.skincare||{}).length>0;
+    if(any) total++;
+    const kd=new Date(k);
+    if(kd>=weekAgo){
+      wTotal+=5;
+      wDone+=Object.keys(d.tasks||{}).length;
+      if(d.skincare?.morning?.done) wDone++;
+      if(d.skincare?.night?.done) wDone++;
+    }
+  });
+  let s=0;
+  for(let i=keys.length-1;i>=0;i--){
+    const d=data[keys[i]];
+    if(Object.keys(d.tasks||{}).length>0||Object.keys(d.skincare||{}).length>0) s++; else break;
+  }
+  document.getElementById('streak-days').textContent=s;
+  document.getElementById('total-days').textContent=total;
+  document.getElementById('complete-rate').textContent=wTotal?Math.round(wDone/wTotal*100)+'%':'0%';
+}
+function renderHistory() {
+  const data=getStorage(),keys=Object.keys(data).sort().reverse();
+  const el=document.getElementById('history-items');
+  if(!keys.length){el.innerHTML='<div style="padding:1.5rem;text-align:center;font-size:13px;color:var(--text-muted);">还没有记录</div>';return;}
+  el.innerHTML=keys.map(k=>{
+    const d=data[k],tags=[];
+    if(d.tasks?.breakfast) tags.push(`<span class="history-tag h-done">早餐${d.tasks.breakfast.late?'(补)':''}</span>`);
+    if(d.tasks?.lunch) tags.push(`<span class="history-tag h-done">午餐${d.tasks.lunch.late?'(补)':''}</span>`);
+    if(d.tasks?.dinner) tags.push(`<span class="history-tag h-done">晚餐${d.tasks.dinner.late?'(补)':''}</span>`);
+    if(d.skincare?.morning?.done) tags.push('<span class="history-tag h-done">早间护肤</span>');
+    if(d.skincare?.morning?.skipped) tags.push('<span class="history-tag h-skip">跳过早间</span>');
+    if(d.skincare?.night?.done) tags.push('<span class="history-tag h-done">晚间护肤</span>');
+    if(d.skincare?.night?.skipped) tags.push('<span class="history-tag h-skip">跳过晚间</span>');
+    if(d.water) tags.push(`<span class="history-tag h-note">喝水${d.water}杯</span>`);
+    if(!tags.length) return '';
+    return `<div class="history-item"><div class="history-date">${k}</div><div class="history-tags">${tags.join('')}</div></div>`;
+  }).filter(Boolean).join('')||'<div style="padding:1.5rem;text-align:center;font-size:13px;color:var(--text-muted);">还没有记录</div>';
+}
+
+document.getElementById('late-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});
+document.getElementById('skincare-confirm').addEventListener('click',function(e){if(e.target===this)closeConfirm();});
+
+function init() {
+  const d=new Date(),days=['日','一','二','三','四','五','六'];
+  document.getElementById('today-date').textContent=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 · 星期${days[d.getDay()]}`;
+  renderSkincareSteps(); renderTasks(); renderSkincare(); renderWater(); renderPeriod(); updateStats(); renderBadges();
+  setInterval(()=>{ renderBadges(); renderTasks(); },60000);
+}
+init();
+</script>
+</body>
+</html>
