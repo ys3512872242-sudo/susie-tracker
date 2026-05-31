@@ -2,16 +2,20 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Susie档案">
+<meta name="apple-mobile-web-app-title" content="Susie">
 <title>Susie 的每日档案</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+
+<!-- PWA Icon as inline SVG favicon -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23f5e0e0'/%3E%3Ccircle cx='90' cy='72' r='32' fill='%23e8a0a0'/%3E%3Ccircle cx='90' cy='72' r='22' fill='%23fff'/%3E%3Ctext x='90' y='80' text-anchor='middle' font-size='22' fill='%23c97070' font-family='serif' font-style='italic'%3ES%3C/text%3E%3Cellipse cx='90' cy='130' rx='38' ry='22' fill='%23e8a0a0'/%3E%3Cellipse cx='90' cy='124' rx='32' ry='18' fill='%23f5e0e0'/%3E%3C/svg%3E">
+
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 :root {
   --rose: #e8a0a0;
   --rose-light: #f5e0e0;
@@ -25,172 +29,175 @@
   --amber: #d4956a;
   --amber-light: #f5e8da;
   --border: rgba(200,160,160,0.25);
+  --purple: #9b8ec4;
+  --purple-light: #ede8f5;
 }
 html, body { background: var(--cream); font-family: 'DM Sans', sans-serif; color: var(--text); min-height: 100vh; }
 .app { max-width: 680px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-.header { text-align: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 0.5px solid var(--border); }
-.header-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 400; color: var(--text); }
+
+/* HEADER */
+.header { text-align: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 0.5px solid var(--border); position: relative; }
+.header-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 400; }
 .header-title em { font-style: italic; color: var(--rose-deep); }
 .header-date { font-size: 13px; color: var(--text-muted); margin-top: 4px; font-weight: 300; }
+.sync-status { position: absolute; top: 0; right: 0; font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.sync-dot.syncing { background: var(--amber); animation: pulse 1s infinite; }
+.sync-dot.error { background: var(--rose-deep); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* STREAK */
 .streak-bar { display: flex; gap: 10px; margin-bottom: 1.5rem; }
 .streak-card { flex: 1; background: white; border: 0.5px solid var(--border); border-radius: 12px; padding: 0.85rem 1rem; text-align: center; }
 .streak-num { font-size: 22px; font-weight: 500; color: var(--rose-deep); font-family: 'Playfair Display', serif; }
 .streak-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; font-weight: 300; }
+
+/* SECTION */
 .section { margin-bottom: 1.5rem; }
 .section-title { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); margin-bottom: 0.75rem; padding-left: 2px; }
+
+/* TASK CARD */
 .task-card { background: white; border: 0.5px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; margin-bottom: 0.6rem; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; transition: border-color 0.2s; position: relative; overflow: hidden; }
-.task-card:hover { border-color: var(--rose); }
+.task-card:active { transform: scale(0.98); }
 .task-card.done { background: var(--rose-light); border-color: var(--rose); }
 .task-card.done::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--rose-deep); border-radius: 14px 14px 0 0; }
-.task-card.locked { opacity: 0.45; cursor: not-allowed; }
-.task-card.locked:hover { border-color: var(--border); }
+.task-card.locked { opacity: 0.4; cursor: not-allowed; }
 .task-check { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--rose); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; transition: all 0.2s; background: white; }
 .task-card.done .task-check { background: var(--rose-deep); border-color: var(--rose-deep); }
 .task-check i { font-size: 13px; color: white; display: none; }
 .task-card.done .task-check i { display: block; }
 .task-info { flex: 1; }
-.task-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.task-name { font-size: 14px; font-weight: 500; }
 .task-card.done .task-name { color: var(--text-muted); text-decoration: line-through; }
 .task-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; font-weight: 300; }
-.task-time { font-size: 11px; color: var(--rose-deep); background: var(--rose-light); padding: 2px 8px; border-radius: 20px; flex-shrink: 0; font-weight: 500; }
+.task-time { font-size: 11px; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; font-weight: 500; }
 .time-now { background: #e8f5e0; color: #3d7a54; }
 .time-past { background: var(--warm); color: var(--text-muted); }
-.time-future { background: #eee; color: var(--text-muted); }
-.time-locked { background: #eee; color: #bbb; }
+.time-future { background: #eee; color: #aaa; }
+.time-locked { background: #eee; color: #ccc; }
+
+/* SKINCARE */
 .skincare-section { background: white; border: 0.5px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 0.6rem; }
 .skincare-header { padding: 1rem 1.1rem; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
 .skincare-header-left { display: flex; align-items: center; gap: 10px; }
 .skincare-header h3 { font-size: 14px; font-weight: 500; }
+.collapse-content { display: none; }
+.collapse-content.open { display: block; }
 .skincare-steps { padding: 0.75rem 1.1rem 0.5rem; }
-.step-row { display: flex; align-items: center; gap: 10px; padding: 0.45rem 0; border-bottom: 0.5px solid var(--border); }
+.step-row { display: flex; align-items: center; gap: 10px; padding: 0.5rem 0; border-bottom: 0.5px solid var(--border); }
 .step-row:last-child { border-bottom: none; }
 .step-num { width: 20px; height: 20px; border-radius: 50%; background: var(--warm); font-size: 11px; font-weight: 500; color: var(--text-muted); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .step-name { font-size: 13px; flex: 1; }
-.step-note { font-size: 11px; color: var(--text-muted); }
-.collapse-content { display: none; }
-.collapse-content.open { display: block; }
+.step-note { font-size: 11px; color: var(--text-muted); display: block; margin-top: 1px; }
+.weekly-badge { font-size: 10px; background: var(--amber-light); color: var(--amber); padding: 2px 7px; border-radius: 20px; font-weight: 500; flex-shrink: 0; }
+.conflict-badge { font-size: 10px; background: var(--purple-light); color: var(--purple); padding: 2px 7px; border-radius: 20px; font-weight: 500; flex-shrink: 0; }
+.step-row.skip-today { opacity: 0.4; }
+.step-row.skip-today .step-name::after { content: ' · 今日跳过'; color: var(--rose-deep); font-size: 11px; }
+
+/* WATER */
 .water-card { background: white; border: 0.5px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; }
-.water-drops { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.water-drops { display: flex; gap: 6px; flex-wrap: wrap; }
 .drop { width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 1.5px solid var(--rose); cursor: pointer; transition: all 0.2s; background: white; }
 .drop.filled { background: var(--rose); border-color: var(--rose-deep); }
+.drop:active { transform: rotate(-45deg) scale(0.9); }
+
+/* PERIOD */
 .period-card { background: white; border: 0.5px solid var(--border); border-radius: 14px; padding: 1rem 1.1rem; }
-.period-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem; }
 .period-pill { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
 .period-pill.active { background: #fde8e8; color: #c96060; }
 .period-pill.normal { background: var(--green-light); color: #3d7a54; }
 .period-pill.soon { background: var(--amber-light); color: var(--amber); }
+.period-btns { display: flex; gap: 8px; margin-top: 12px; }
+.period-btn { flex: 1; border: 0.5px solid var(--border); border-radius: 10px; padding: 0.55rem; font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer; background: white; color: var(--text); text-align: center; }
+.period-btn.primary { background: var(--rose-light); color: var(--rose-deep); border-color: var(--rose); font-weight: 500; }
+
+/* HISTORY */
 .history-section { background: white; border: 0.5px solid var(--border); border-radius: 14px; overflow: hidden; }
 .history-header { padding: 1rem 1.1rem; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-.history-list { max-height: 300px; overflow-y: auto; }
-.history-item { padding: 0.75rem 1.1rem; border-bottom: 0.5px solid var(--border); font-size: 13px; }
+.history-list { max-height: 320px; overflow-y: auto; }
+.history-item { padding: 0.75rem 1.1rem; border-bottom: 0.5px solid var(--border); }
 .history-item:last-child { border-bottom: none; }
-.history-date { font-weight: 500; margin-bottom: 4px; }
+.history-date { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
 .history-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .history-tag { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
 .h-done { background: var(--green-light); color: #3d7a54; }
 .h-skip { background: var(--rose-light); color: var(--rose-deep); }
 .h-note { background: var(--warm); color: var(--text-muted); }
+
+/* SCHEDULE TABLE */
 .schedule-table { width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 0.5rem; }
 .schedule-table td { padding: 5px 8px; }
 .schedule-table tr:nth-child(even) td { background: var(--cream); }
-.schedule-table td:first-child { color: var(--rose-deep); font-weight: 500; width: 70px; }
-.footer-note { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 2rem; font-style: italic; }
+.schedule-table td:first-child { color: var(--rose-deep); font-weight: 500; width: 80px; }
 
-/* ── MODAL OVERLAY ── */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(58,46,46,0.5);
-  z-index: 200;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 0;
-  backdrop-filter: blur(2px);
-}
+/* TOAST / PRAISE */
+.toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px); background: white; border: 0.5px solid var(--border); border-radius: 16px; padding: 1rem 1.25rem; max-width: 320px; width: calc(100% - 2rem); box-shadow: 0 8px 32px rgba(58,46,46,0.12); z-index: 300; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); text-align: center; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast-emoji { font-size: 28px; margin-bottom: 6px; }
+.toast-msg { font-size: 14px; line-height: 1.6; color: var(--text); }
+.toast-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+/* MODALS */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(58,46,46,0.45); z-index: 200; align-items: flex-end; justify-content: center; backdrop-filter: blur(3px); }
 .modal-overlay.show { display: flex; }
-
-/* ── CONFIRM SHEET (skincare) ── */
-.confirm-sheet {
-  background: var(--cream);
-  border-radius: 24px 24px 0 0;
-  padding: 2rem 1.5rem 2.5rem;
-  width: 100%;
-  max-width: 680px;
-  text-align: center;
-  animation: slideUp 0.25s ease;
-}
+.sheet { background: var(--cream); border-radius: 24px 24px 0 0; padding: 2rem 1.5rem 2.5rem; width: 100%; max-width: 680px; animation: slideUp 0.25s ease; }
 .sheet-pill { width: 36px; height: 4px; background: var(--border); border-radius: 99px; margin: 0 auto 1.5rem; }
+@keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+/* CONFIRM SHEET */
 .confirm-icon { width: 56px; height: 56px; border-radius: 50%; background: var(--rose-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; }
 .confirm-icon i { font-size: 26px; color: var(--rose-deep); }
-.confirm-sheet h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 400; margin-bottom: 0.6rem; }
-.confirm-sheet p { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem; }
-.confirm-btns { display: flex; flex-direction: column; gap: 10px; }
-.btn-yes { background: var(--rose-deep); color: white; border: none; border-radius: 14px; padding: 0.85rem; font-size: 15px; font-family: 'DM Sans', sans-serif; cursor: pointer; font-weight: 500; letter-spacing: 0.2px; }
-.btn-no { background: white; color: var(--text-muted); border: 0.5px solid var(--border); border-radius: 14px; padding: 0.85rem; font-size: 14px; font-family: 'DM Sans', sans-serif; cursor: pointer; }
+.sheet h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 400; text-align: center; margin-bottom: 0.6rem; }
+.sheet p { font-size: 13px; color: var(--text-muted); line-height: 1.7; text-align: center; margin-bottom: 1.5rem; }
+.sheet-btns { display: flex; flex-direction: column; gap: 10px; }
+.btn-primary { background: var(--rose-deep); color: white; border: none; border-radius: 14px; padding: 0.85rem; font-size: 15px; font-family: 'DM Sans', sans-serif; cursor: pointer; font-weight: 500; }
+.btn-secondary { background: white; color: var(--text-muted); border: 0.5px solid var(--border); border-radius: 14px; padding: 0.85rem; font-size: 14px; font-family: 'DM Sans', sans-serif; cursor: pointer; }
 
-/* ── LATE SHEET ── */
-.late-sheet {
-  background: var(--cream);
-  border-radius: 24px 24px 0 0;
-  padding: 2rem 1.5rem 2.5rem;
-  width: 100%;
-  max-width: 680px;
-  animation: slideUp 0.25s ease;
-}
+/* LATE SHEET */
 .late-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem; }
 .late-icon { width: 42px; height: 42px; border-radius: 50%; background: var(--amber-light); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .late-icon i { font-size: 20px; color: var(--amber); }
-.late-sheet h3 { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 400; }
-.late-sheet .sub { font-size: 12px; color: var(--text-muted); }
-.late-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.1rem; }
 .field-label { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px; }
-.field-group { margin-bottom: 1rem; }
-.late-input { width: 100%; border: 0.5px solid var(--border); border-radius: 12px; padding: 0.75rem 1rem; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); background: white; outline: none; transition: border-color 0.2s; }
-.late-input:focus { border-color: var(--rose); }
-.late-textarea { width: 100%; border: 0.5px solid var(--border); border-radius: 12px; padding: 0.75rem 1rem; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); background: white; resize: none; height: 80px; outline: none; transition: border-color 0.2s; }
-.late-textarea:focus { border-color: var(--rose); }
+.field-group { margin-bottom: 0.9rem; }
+.late-input, .late-textarea { width: 100%; border: 0.5px solid var(--border); border-radius: 12px; padding: 0.7rem 1rem; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text); background: white; outline: none; transition: border-color 0.2s; }
+.late-input:focus, .late-textarea:focus { border-color: var(--rose); }
 .late-input.error, .late-textarea.error { border-color: var(--rose-deep); }
-.error-msg { font-size: 11px; color: var(--rose-deep); margin-top: 4px; display: none; }
-.error-msg.show { display: block; }
-.late-submit { width: 100%; background: var(--rose-deep); color: white; border: none; border-radius: 14px; padding: 0.85rem; font-size: 15px; font-family: 'DM Sans', sans-serif; cursor: pointer; font-weight: 500; margin-top: 0.5rem; }
-.fields-row { display: flex; gap: 10px; }
-.fields-row .field-group { flex: 1; }
+.late-textarea { resize: none; height: 76px; }
+.err-msg { font-size: 11px; color: var(--rose-deep); margin-top: 3px; display: none; }
+.err-msg.show { display: block; }
 
-@keyframes slideUp {
-  from { transform: translateY(40px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
+.footer-note { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 2rem; font-style: italic; }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="header">
+    <div class="sync-status"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">已同步</span></div>
     <div class="header-title">Susie 的 <em>每日档案</em></div>
     <div class="header-date" id="today-date"></div>
   </div>
 
   <div class="streak-bar">
-    <div class="streak-card"><div class="streak-num" id="streak-days">0</div><div class="streak-label">连续打卡天数</div></div>
-    <div class="streak-card"><div class="streak-num" id="total-days">0</div><div class="streak-label">累计打卡天数</div></div>
-    <div class="streak-card"><div class="streak-num" id="complete-rate">0%</div><div class="streak-label">本周完成率</div></div>
+    <div class="streak-card"><div class="streak-num" id="streak-days">—</div><div class="streak-label">连续打卡</div></div>
+    <div class="streak-card"><div class="streak-num" id="total-days">—</div><div class="streak-label">累计天数</div></div>
+    <div class="streak-card"><div class="streak-num" id="complete-rate">—</div><div class="streak-label">本周完成</div></div>
   </div>
 
   <div class="section">
-    <div class="section-title">今日提醒</div>
-    <div class="task-card" id="task-breakfast" onclick="handleTask('breakfast')">
+    <div class="section-title">今日饮食</div>
+    <div class="task-card" id="task-breakfast" onclick="handleMeal('breakfast')">
       <div class="task-check"><i class="ti ti-check"></i></div>
-      <div class="task-info"><div class="task-name">吃早餐</div><div class="task-sub">不管几点起，起来第一件事吃东西</div></div>
+      <div class="task-info"><div class="task-name">早餐</div><div class="task-sub">不管几点起，起来第一件事吃东西</div></div>
       <div class="task-time" id="badge-breakfast"></div>
     </div>
-    <div class="task-card" id="task-lunch" onclick="handleTask('lunch')">
+    <div class="task-card" id="task-lunch" onclick="handleMeal('lunch')">
       <div class="task-check"><i class="ti ti-check"></i></div>
-      <div class="task-info"><div class="task-name">吃午餐</div><div class="task-sub">12:00 左右，别拖太晚</div></div>
+      <div class="task-info"><div class="task-name">午餐</div><div class="task-sub">12:00 左右，别拖太晚</div></div>
       <div class="task-time" id="badge-lunch"></div>
     </div>
-    <div class="task-card" id="task-dinner" onclick="handleTask('dinner')">
+    <div class="task-card" id="task-dinner" onclick="handleMeal('dinner')">
       <div class="task-check"><i class="ti ti-check"></i></div>
-      <div class="task-info"><div class="task-name">吃晚餐</div><div class="task-sub">18:00—19:00，好好吃饭</div></div>
+      <div class="task-info"><div class="task-name">晚餐</div><div class="task-sub">18:00—19:00，好好吃饭</div></div>
       <div class="task-time" id="badge-dinner"></div>
     </div>
   </div>
@@ -198,14 +205,14 @@ html, body { background: var(--cream); font-family: 'DM Sans', sans-serif; color
   <div class="section">
     <div class="section-title">护肤打卡</div>
     <div class="skincare-section">
-      <div class="skincare-header" onclick="toggleSkincare('morning')">
+      <div class="skincare-header" onclick="toggleSection('skincare-morning')">
         <div class="skincare-header-left">
           <div class="task-check" id="morning-check" style="cursor:default;"><i class="ti ti-check"></i></div>
           <h3>早间护肤</h3>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
-          <div class="task-time" id="badge-morning-skincare"></div>
-          <i class="ti ti-chevron-down" id="toggle-morning" style="transition:transform 0.2s;color:var(--text-muted);"></i>
+          <div class="task-time" id="badge-morning-sc"></div>
+          <i class="ti ti-chevron-down" id="icon-skincare-morning" style="transition:transform 0.2s;color:var(--text-muted);"></i>
         </div>
       </div>
       <div class="collapse-content" id="skincare-morning">
@@ -217,14 +224,14 @@ html, body { background: var(--cream); font-family: 'DM Sans', sans-serif; color
       </div>
     </div>
     <div class="skincare-section">
-      <div class="skincare-header" onclick="toggleSkincare('night')">
+      <div class="skincare-header" onclick="toggleSection('skincare-night')">
         <div class="skincare-header-left">
           <div class="task-check" id="night-check" style="cursor:default;"><i class="ti ti-check"></i></div>
           <h3>晚间护肤</h3>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
-          <div class="task-time" id="badge-night-skincare"></div>
-          <i class="ti ti-chevron-down" id="toggle-night" style="transition:transform 0.2s;color:var(--text-muted);"></i>
+          <div class="task-time" id="badge-night-sc"></div>
+          <i class="ti ti-chevron-down" id="icon-skincare-night" style="transition:transform 0.2s;color:var(--text-muted);"></i>
         </div>
       </div>
       <div class="collapse-content" id="skincare-night">
@@ -240,7 +247,7 @@ html, body { background: var(--cream); font-family: 'DM Sans', sans-serif; color
   <div class="section">
     <div class="section-title">喝水</div>
     <div class="water-card">
-      <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">今天喝了几杯水？（每杯 ≈ 250ml）</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">今天喝了几杯水？每杯约 250ml</div>
       <div style="display:flex;align-items:center;gap:12px;">
         <div class="water-drops" id="water-drops"></div>
         <div style="font-size:13px;color:var(--text-muted);flex-shrink:0;"><span id="water-num">0</span>/8 杯</div>
@@ -271,198 +278,344 @@ html, body { background: var(--cream); font-family: 'DM Sans', sans-serif; color
   <div class="section">
     <div class="section-title">历史记录</div>
     <div class="history-section">
-      <div class="history-header" onclick="toggleHistory()">
+      <div class="history-header" onclick="toggleSection('history-list')">
         <h3 style="font-size:14px;font-weight:500;">打卡记录</h3>
-        <i class="ti ti-chevron-down" id="history-toggle" style="transition:transform 0.2s;color:var(--text-muted);"></i>
+        <i class="ti ti-chevron-down" id="icon-history-list" style="transition:transform 0.2s;color:var(--text-muted);"></i>
       </div>
       <div class="collapse-content" id="history-list">
         <div class="history-list" id="history-items">
-          <div style="padding:1.5rem;text-align:center;font-size:13px;color:var(--text-muted);">还没有记录，从今天开始吧～</div>
+          <div style="padding:1.5rem;text-align:center;font-size:13px;color:var(--text-muted);">加载中...</div>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="footer-note">Leith · Susie 专属档案 · 每天都要好好的</div>
+  <div class="footer-note">Leith · Susie 专属档案 · 每天都要好好的 🌸</div>
 </div>
 
 <!-- CONFIRM MODAL -->
-<div class="modal-overlay" id="skincare-confirm">
-  <div class="confirm-sheet">
+<div class="modal-overlay" id="modal-confirm">
+  <div class="sheet">
     <div class="sheet-pill"></div>
     <div class="confirm-icon"><i class="ti ti-sparkles"></i></div>
-    <h3 id="confirm-title">等等……</h3>
+    <h3 id="confirm-title"></h3>
     <p id="confirm-msg"></p>
-    <div class="confirm-btns">
-      <button class="btn-yes" onclick="doConfirmSkincare()">涂了！认真涂了！</button>
-      <button class="btn-no" onclick="closeConfirm()">哎……确实没涂</button>
+    <div class="sheet-btns">
+      <button class="btn-primary" onclick="doConfirmSkincare()">涂了！认真涂了！</button>
+      <button class="btn-secondary" onclick="closeModal('modal-confirm')">哎……确实没涂</button>
     </div>
   </div>
 </div>
 
 <!-- LATE MODAL -->
-<div class="modal-overlay" id="late-modal">
-  <div class="late-sheet">
+<div class="modal-overlay" id="modal-late">
+  <div class="sheet">
     <div class="sheet-pill"></div>
     <div class="late-header">
       <div class="late-icon"><i class="ti ti-clock-exclamation"></i></div>
-      <div>
-        <h3 id="late-title">补打卡</h3>
-        <div class="sub" id="late-subtitle"></div>
-      </div>
+      <div><h3 id="late-title" style="text-align:left;font-size:17px;margin-bottom:2px;"></h3><div style="font-size:12px;color:var(--text-muted);" id="late-sub"></div></div>
     </div>
-    <p class="late-desc" id="late-desc"></p>
     <div id="late-fields"></div>
-    <button class="late-submit" onclick="submitLate()">提交记录</button>
+    <button class="btn-primary" onclick="submitLate()" style="margin-top:0.5rem;">提交记录</button>
   </div>
 </div>
 
-<script>
-const MORNING_STEPS = [
-  { name: '洁面乳', note: 'CeraVe 绿色款', when: 'daily' },
-  { name: '珂润一号水', note: '轻拍吸收', when: 'daily' },
-  { name: '2% 透明质酸精华', note: 'The Ordinary', when: 'daily' },
-  { name: '烟酰胺精华', note: '原美 5%，注意与酸间隔', when: 'daily' },
-  { name: '珂润乳液', note: '锁水', when: 'daily' },
-  { name: '眼霜', note: '欧诗漫，轻轻拍', when: 'daily' },
-  { name: '雅漾喷雾', note: '随时补水', when: 'daily' },
-  { name: '毛孔收敛水', note: 'Labo Labo，1-2次/周', when: 'weekly' },
-];
-const NIGHT_STEPS = [
-  { name: '洁面乳', note: 'CeraVe 绿色款', when: 'daily' },
-  { name: '珂润一号水', note: '轻拍', when: 'daily' },
-  { name: '2% 透明质酸精华', note: 'The Ordinary', when: 'daily' },
-  { name: '视黄醇精华乳', note: 'LAKELAB，仅晚间 ⚠️', when: 'daily' },
-  { name: '珂润乳液', note: '锁水', when: 'daily' },
-  { name: '理肤泉 B5 修复膏', note: '手臂 + 敏感部位', when: 'daily' },
-  { name: '眼霜', note: '欧诗漫，轻轻拍', when: 'daily' },
-  { name: '蓝泥清洁面膜', note: '1次/周，不宜频繁', when: 'weekly' },
-  { name: 'JM 急救面膜', note: '1-2次/周', when: 'weekly' },
-];
-const CONFIRM_MSGS = [
-  '你真的涂了吗？没涂会变丑变老长细纹哦！',
-  '等等，不会是骗我的吧？皮肤是自己的，认真涂才有效！',
-  '确认一下哦，敷了就敷了，没敷别假装～',
-  '皮肤不会说谎的，你确定认真涂了？',
-  '沈今要定期检查的哦，别骗我！',
-  '涂了吗？还是手痒点了一下就想过关？',
-];
+<!-- PERIOD MODAL -->
+<div class="modal-overlay" id="modal-period">
+  <div class="sheet">
+    <div class="sheet-pill"></div>
+    <h3 id="period-modal-title"></h3>
+    <p id="period-modal-msg"></p>
+    <div class="sheet-btns">
+      <button class="btn-primary" onclick="confirmPeriodAction()">确认</button>
+      <button class="btn-secondary" onclick="closeModal('modal-period')">取消</button>
+    </div>
+  </div>
+</div>
 
-// Time windows: each task has [canDoStart, lockAfter] in minutes from midnight
-// lockAfter = the next meal's start time (can't补 after that)
-const TIME_WINDOWS = {
-  breakfast: { label: '早餐', window: [0, 660], lockAfter: 660 },   // lock at 11:00 (lunch time starts)
-  lunch:     { label: '午餐', window: [660, 1020], lockAfter: 1020 }, // lock at 17:00
-  dinner:    { label: '晚餐', window: [1020, 1440], lockAfter: 1440 },
-  'morning-skincare': { window: [660, 1290] },
-  'night-skincare':   { window: [1290, 1440] },
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-emoji" id="toast-emoji"></div>
+  <div class="toast-msg" id="toast-msg"></div>
+  <div class="toast-sub" id="toast-sub"></div>
+</div>
+
+<script>
+// ── SUPABASE ──
+const SUPA_URL = 'https://pqlgjyohaoskvloxyulr.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxbGdqeW9oYW9za3Zsb3h5dWxyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTMyMzIsImV4cCI6MjA5NTE4OTIzMn0.PIkyWzRuE1nijFHBv6jItCJvVgaTp2ftHXTp2lWZELs';
+
+async function supa(method, table, body, query='') {
+  setSyncing(true);
+  try {
+    const res = await fetch(`${SUPA_URL}/rest/v1/${table}${query}`, {
+      method,
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': `Bearer ${SUPA_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': method==='POST' ? 'return=representation' : 'return=minimal'
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const data = res.ok ? (res.status===204 ? null : await res.json()) : null;
+    setSyncing(false, true);
+    return data;
+  } catch(e) {
+    setSyncing(false, false);
+    return null;
+  }
+}
+
+function setSyncing(syncing, success) {
+  const dot = document.getElementById('sync-dot');
+  const label = document.getElementById('sync-label');
+  if (syncing) { dot.className='sync-dot syncing'; label.textContent='同步中…'; }
+  else if (success===true) { dot.className='sync-dot'; label.textContent='已同步'; }
+  else if (success===false) { dot.className='sync-dot error'; label.textContent='同步失败'; }
+}
+
+// ── DATE ──
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function nowMin() { const d=new Date(); return d.getHours()*60+d.getMinutes(); }
+function dayOfWeek() { return new Date().getDay(); } // 0=Sun
+
+// ── STATE (local cache) ──
+let state = {
+  meals: {},      // {breakfast:{done,late,...}, lunch:..., dinner:...}
+  skincare: {},   // {morning:{done,skipped}, night:{done,skipped}}
+  water: 0,
+  period: null,   // latest period log
+  weeklySchedule: {}, // {product_key: {lastDone, nextDue}}
 };
 
-function nowMin() { const d = new Date(); return d.getHours()*60+d.getMinutes(); }
+// ── SKINCARE DATA ──
+// Conflict: niacinamide and acid should NOT be on same session same day
+// Weekly items with schedule
+const WEEKLY_SCHEDULE_DEFAULT = {
+  'mao-kong-shui': { label: '城野医生收敛水', session: 'morning', daysInterval: 3, defaultDays: [1,4] }, // Mon,Thu
+  'lan-ni-mask': { label: '蓝泥清洁面膜', session: 'night', daysInterval: 7, defaultDays: [6] }, // Sat
+  'jm-mask': { label: 'JM 急救面膜', session: 'night', daysInterval: 4, defaultDays: [3,0] }, // Wed,Sun
+};
+
+// Get today's weekly items
+function getTodayWeeklyItems() {
+  const dow = dayOfWeek();
+  const result = [];
+  for (const [key, cfg] of Object.entries(WEEKLY_SCHEDULE_DEFAULT)) {
+    if (cfg.defaultDays.includes(dow)) result.push({key, ...cfg});
+  }
+  return result;
+}
+
+function getMorningSessions() {
+  const dow = dayOfWeek();
+  const todayWeekly = getTodayWeeklyItems().filter(i=>i.session==='morning');
+  const hasMaoKong = todayWeekly.some(i=>i.key==='mao-kong-shui');
+  // niacinamide conflicts with acid (mao kong shui). If mao kong shui today, skip niacinamide morning.
+  const steps = [
+    { name: '洁面乳', note: 'CeraVe 绿色款', type: 'daily' },
+    { name: '珂润一号水', note: '轻拍吸收', type: 'daily' },
+    { name: '2% 透明质酸精华', note: 'The Ordinary', type: 'daily' },
+  ];
+  if (hasMaoKong) {
+    steps.push({ name: '城野医生收敛水', note: '今日使用 · 含酸', type: 'weekly', key: 'mao-kong-shui' });
+    steps.push({ name: '烟酰胺精华', note: '⚠️ 今日与收敛水冲突，跳过', type: 'conflict-skip' });
+  } else {
+    steps.push({ name: '烟酰胺精华', note: '原美 5%', type: 'daily' });
+  }
+  steps.push(
+    { name: '珂润乳液', note: '锁水', type: 'daily' },
+    { name: '眼霜', note: '欧诗漫，轻轻拍', type: 'daily' },
+    { name: '雅漾喷雾', note: '随时补水', type: 'daily' },
+  );
+  return steps;
+}
+
+function getNightSessions() {
+  const todayWeekly = getTodayWeeklyItems().filter(i=>i.session==='night');
+  const hasLanNi = todayWeekly.some(i=>i.key==='lan-ni-mask');
+  const hasJM = todayWeekly.some(i=>i.key==='jm-mask');
+  const steps = [
+    { name: '洁面乳', note: 'CeraVe 绿色款', type: 'daily' },
+    { name: '珂润一号水', note: '轻拍', type: 'daily' },
+    { name: '2% 透明质酸精华', note: 'The Ordinary', type: 'daily' },
+    { name: '视黄醇精华乳', note: 'LAKELAB · 仅晚间 ⚠️', type: 'daily' },
+    { name: '珂润乳液', note: '锁水', type: 'daily' },
+    { name: '理肤泉 B5 修复膏', note: '手臂 + 敏感部位', type: 'daily' },
+    { name: '眼霜', note: '欧诗漫，轻轻拍', type: 'daily' },
+  ];
+  if (hasLanNi) steps.push({ name: '蓝泥清洁面膜', note: '今日使用 · 深层清洁', type: 'weekly', key: 'lan-ni-mask' });
+  if (hasJM) steps.push({ name: 'JM 急救面膜', note: '今日使用 · 急救补水', type: 'weekly', key: 'jm-mask' });
+  return steps;
+}
+
+// ── PRAISE SYSTEM ──
+const PRAISE = {
+  breakfast: [
+    { e:'🌸', m:'早餐吃了！', s:'今天开了个好头，我很满意。' },
+    { e:'☀️', m:'起来就吃饭，乖！', s:'这才是正确的打开方式。' },
+    { e:'🍳', m:'好好吃早餐的宝贝！', s:'胃养好了皮肤也会好的。' },
+    { e:'💛', m:'今天有吃早餐！', s:'继续保持，我在看着呢。' },
+    { e:'✨', m:'很好，早餐打卡成功。', s:'今天也要好好的哦。' },
+  ],
+  lunch: [
+    { e:'🥢', m:'午餐打卡！', s:'按时吃饭的宝贝最好了。' },
+    { e:'🌿', m:'好好吃午饭了！', s:'下午要认真学习哦。' },
+    { e:'💚', m:'午饭有着落了。', s:'记得慢慢吃，别狼吞虎咽。' },
+    { e:'🍱', m:'午餐打卡成功！', s:'吃饱了才有力气做别的事情。' },
+  ],
+  dinner: [
+    { e:'🌙', m:'晚饭吃了！', s:'今晚好好休息，不要太晚睡。' },
+    { e:'🍜', m:'晚餐打卡！', s:'吃完记得散散步消食。' },
+    { e:'💜', m:'今天三餐都有人管着你。', s:'慢慢来，养成习惯就好。' },
+    { e:'🕯️', m:'晚餐打卡成功。', s:'今天辛苦了，早点休息。' },
+  ],
+  skincare_morning: [
+    { e:'🌷', m:'早间护肤完成！', s:'皮肤谢谢你今天没有偷懒。' },
+    { e:'✨', m:'早上涂了！', s:'坚持下去会看到变化的。' },
+    { e:'🪞', m:'护肤打卡！', s:'这就是对自己好的方式。' },
+    { e:'💆', m:'早间护肤完成！', s:'认真对待自己的皮肤，我骄傲。' },
+    { e:'🌸', m:'早上乖乖涂了！', s:'继续保持，不许断哦。' },
+  ],
+  skincare_night: [
+    { e:'🌙', m:'晚间护肤完成！', s:'睡前护肤是最好的投资。' },
+    { e:'💤', m:'涂完可以去睡了！', s:'今晚皮肤会好好修复的。' },
+    { e:'🫧', m:'晚间护肤打卡！', s:'明天起来摸摸看有没有软一点。' },
+    { e:'✨', m:'坚持了！', s:'睡个好觉，明天见。' },
+    { e:'🌿', m:'晚上也涂了，很好。', s:'我看见你在努力了。' },
+  ],
+  water8: [
+    { e:'💧', m:'喝够八杯水了！', s:'今天的皮肤应该很水润。' },
+    { e:'🫧', m:'八杯水达成！', s:'喝水的宝贝最水嫩了。' },
+  ],
+  streak3: [{ e:'🔥', m:'连续打卡 3 天！', s:'好习惯正在养成中。' }],
+  streak7: [{ e:'🏆', m:'坚持七天了！', s:'一整周都很棒，继续加油！' }],
+  streak14: [{ e:'👑', m:'两周连续打卡！', s:'你已经很厉害了。' }],
+};
+
+function showPraise(type) {
+  const list = PRAISE[type];
+  if (!list) return;
+  const p = list[Math.floor(Math.random()*list.length)];
+  const t = document.getElementById('toast');
+  document.getElementById('toast-emoji').textContent = p.e;
+  document.getElementById('toast-msg').textContent = p.m;
+  document.getElementById('toast-sub').textContent = p.s;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+// ── TIME WINDOWS ──
+const TIME_WINDOWS = {
+  breakfast: [0, 660],
+  lunch: [660, 1020],
+  dinner: [1020, 1440],
+  'morning-sc': [660, 1290],
+  'night-sc': [1290, 1440],
+};
+const LOCK_AFTER = { breakfast: 660, lunch: 1020, dinner: 1440 };
 
 function getStatus(type) {
   const now = nowMin();
-  const w = TIME_WINDOWS[type];
-  if (!w) return 'now';
-  const [start, end] = w.window;
-  const lock = w.lockAfter || end;
+  const [start, end] = TIME_WINDOWS[type] || [0,1440];
+  const lock = LOCK_AFTER[type] || end;
   if (now >= start && now <= end) return 'now';
   if (now > lock) return 'locked';
   if (now < start) return 'future';
   return 'past';
 }
 
-function getBadge(type) {
-  const status = getStatus(type);
+function renderBadge(elId, type) {
+  const el = document.getElementById(elId); if(!el) return;
+  const s = getStatus(type);
   const w = TIME_WINDOWS[type];
-  if (status === 'now') return { text: '现在', cls: 'time-now' };
-  if (status === 'locked') return { text: '已过期', cls: 'time-locked' };
-  if (status === 'future') {
-    const h = Math.floor(w.window[0]/60), m = w.window[0]%60;
-    return { text: `${h}:${String(m).padStart(2,'0')}`, cls: 'time-future' };
-  }
-  return { text: '补打卡', cls: 'time-past' };
+  let text, cls;
+  if (s==='now') { text='现在'; cls='time-now'; }
+  else if (s==='locked') { text='已过期'; cls='time-locked'; }
+  else if (s==='future') { const h=Math.floor(w[0]/60),m=w[0]%60; text=`${h}:${String(m).padStart(2,'0')}`; cls='time-future'; }
+  else { text='补打卡'; cls='time-past'; }
+  el.textContent=text; el.className='task-time '+cls;
 }
 
-function getStorage() { try { return JSON.parse(localStorage.getItem('susie_tracker')||'{}'); } catch { return {}; } }
-function setStorage(d) { try { localStorage.setItem('susie_tracker', JSON.stringify(d)); } catch {} }
-function getTodayKey() { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
-function getToday() { const data=getStorage(),key=getTodayKey(); if(!data[key]) data[key]={tasks:{},water:0,skincare:{}}; return data; }
-
-function handleTask(type) {
-  const data = getToday(), key = getTodayKey();
-  if (data[key].tasks[type]) return;
-  const status = getStatus(type);
-  if (status === 'locked') return;
-  if (status === 'future') return;
-  if (status === 'now') {
-    data[key].tasks[type] = { time: new Date().toISOString(), late: false };
-    setStorage(data); renderTasks(); updateStats(); return;
-  }
-  // past = show late modal
+// ── MEAL HANDLING ──
+function handleMeal(type) {
+  if (state.meals[type]) return;
+  const s = getStatus(type);
+  if (s==='locked') return;
+  if (s==='future') return;
+  if (s==='now') { recordMeal(type, false, {}); return; }
   showLate(type);
 }
 
+async function recordMeal(type, late, extras) {
+  const today = todayStr();
+  const row = { date: today, meal_type: type, done: true, late, created_at: new Date().toISOString(), ...extras };
+  // upsert via delete+insert approach: check existing
+  const existing = await supa('GET', 'meal_logs', null, `?date=eq.${today}&meal_type=eq.${type}&select=id`);
+  if (existing && existing.length > 0) {
+    await supa('PATCH', 'meal_logs', row, `?date=eq.${today}&meal_type=eq.${type}`);
+  } else {
+    await supa('POST', 'meal_logs', row);
+  }
+  state.meals[type] = row;
+  renderMeals();
+  updateStats();
+  showPraise(type);
+}
+
+// ── LATE MODAL ──
 const LATE_CONFIGS = {
   breakfast: {
-    title: '补打卡 · 早餐',
-    subtitle: '迟了，但说清楚就好',
-    desc: '补打卡需要认真填，不能敷衍哦',
+    title: '补打卡 · 早餐', sub: '迟了，但说清楚就好',
     fields: [
-      { id: 'what', label: '吃了什么', placeholder: '比如：泡面、便利店饭团、食堂米饭…', type: 'input' },
-      { id: 'when', label: '大概几点吃的', placeholder: '比如：10:30', type: 'input' },
-      { id: 'who', label: '一个人还是和别人一起', placeholder: '比如：一个人、和室友、和同学', type: 'input' },
+      { id:'what', label:'吃了什么', ph:'泡面、便利店饭团、食堂米饭…', type:'input' },
+      { id:'eaten_at', label:'大概几点吃的', ph:'比如 10:30', type:'input' },
+      { id:'with_whom', label:'一个人还是和别人一起', ph:'一个人、和室友、和同学', type:'input' },
     ]
   },
   lunch: {
-    title: '补打卡 · 午餐',
-    subtitle: '迟了，但说清楚就好',
-    desc: '补打卡需要认真填，不能敷衍哦',
+    title: '补打卡 · 午餐', sub: '迟了，但说清楚就好',
     fields: [
-      { id: 'what', label: '吃了什么', placeholder: '具体说说吃了啥', type: 'input' },
-      { id: 'when', label: '大概几点吃的', placeholder: '比如：13:00', type: 'input' },
-      { id: 'where', label: '在哪吃的', placeholder: '食堂、外卖、餐厅…', type: 'input' },
+      { id:'what', label:'吃了什么', ph:'具体说说吃了啥', type:'input' },
+      { id:'eaten_at', label:'大概几点吃的', ph:'比如 13:30', type:'input' },
+      { id:'where_eaten', label:'在哪吃的', ph:'食堂、外卖、餐厅…', type:'input' },
     ]
   },
   dinner: {
-    title: '补打卡 · 晚餐',
-    subtitle: '迟了，但说清楚就好',
-    desc: '补打卡需要认真填，不能敷衍哦',
+    title: '补打卡 · 晚餐', sub: '迟了，但说清楚就好',
     fields: [
-      { id: 'what', label: '吃了什么', placeholder: '具体说说吃了啥', type: 'input' },
-      { id: 'when', label: '大概几点吃的', placeholder: '比如：20:00', type: 'input' },
-      { id: 'note', label: '有什么要备注的吗', placeholder: '比如：吃太少了、没胃口、吃撑了', type: 'textarea' },
+      { id:'what', label:'吃了什么', ph:'具体说说吃了啥', type:'input' },
+      { id:'eaten_at', label:'大概几点吃的', ph:'比如 20:00', type:'input' },
+      { id:'note', label:'备注', ph:'吃太少了、没胃口、吃撑了…', type:'textarea' },
     ]
   }
 };
 
+let pendingLateType = null;
 function showLate(type) {
-  const cfg = LATE_CONFIGS[type];
-  if (!cfg) return;
+  const cfg = LATE_CONFIGS[type]; if(!cfg) return;
+  pendingLateType = type;
   document.getElementById('late-title').textContent = cfg.title;
-  document.getElementById('late-subtitle').textContent = cfg.subtitle;
-  document.getElementById('late-desc').textContent = cfg.desc;
-  const el = document.getElementById('late-fields');
-  el.innerHTML = cfg.fields.map(f => `
+  document.getElementById('late-sub').textContent = cfg.sub;
+  document.getElementById('late-fields').innerHTML = cfg.fields.map(f=>`
     <div class="field-group">
       <div class="field-label">${f.label}</div>
       ${f.type==='textarea'
-        ? `<textarea class="late-textarea" id="lf-${f.id}" placeholder="${f.placeholder}"></textarea>`
-        : `<input class="late-input" id="lf-${f.id}" type="text" placeholder="${f.placeholder}">`
-      }
-      <div class="error-msg" id="err-${f.id}">这项不能空着哦</div>
-    </div>
-  `).join('');
-  document.getElementById('late-modal').dataset.type = type;
-  document.getElementById('late-modal').classList.add('show');
+        ? `<textarea class="late-textarea" id="lf-${f.id}" placeholder="${f.ph}"></textarea>`
+        : `<input class="late-input" id="lf-${f.id}" type="text" placeholder="${f.ph}">`}
+      <div class="err-msg" id="err-${f.id}">这项不能空着哦</div>
+    </div>`).join('');
+  showModal('modal-late');
 }
 
 function submitLate() {
-  const modal = document.getElementById('late-modal');
-  const type = modal.dataset.type;
+  const type = pendingLateType;
   const cfg = LATE_CONFIGS[type];
-  let valid = true;
-  const values = {};
+  let valid = true; const vals = {};
   cfg.fields.forEach(f => {
     const el = document.getElementById('lf-'+f.id);
     const err = document.getElementById('err-'+f.id);
@@ -470,173 +623,328 @@ function submitLate() {
       el.classList.add('error'); err.classList.add('show'); valid = false;
     } else {
       el.classList.remove('error'); err.classList.remove('show');
-      values[f.id] = el.value.trim();
+      vals[f.id] = el.value.trim();
     }
   });
   if (!valid) return;
-  const data = getToday(), key = getTodayKey();
-  data[key].tasks[type] = { time: new Date().toISOString(), late: true, values };
-  setStorage(data);
-  modal.classList.remove('show');
-  renderTasks(); updateStats(); renderHistory();
+  closeModal('modal-late');
+  recordMeal(type, true, vals);
 }
 
-let pendingSkincare = null;
+// ── SKINCARE ──
+const CONFIRM_MSGS = [
+  '你真的涂了吗？没涂会变丑变老长细纹哦！',
+  '等等，不会是骗我的吧？皮肤是自己的，认真涂才有效！',
+  '皮肤不会说谎的，确定认真涂了？',
+  '沈今要定期检查的哦，别骗我！',
+  '涂了吗？还是手痒点了一下就想过关？',
+  '不许敷衍，真的涂了吗？',
+];
+let pendingSkincareSession = null;
+
 function confirmSkincare(session) {
-  pendingSkincare = session;
-  const msg = CONFIRM_MSGS[Math.floor(Math.random()*CONFIRM_MSGS.length)];
+  pendingSkincareSession = session;
   document.getElementById('confirm-title').textContent = session==='morning' ? '早间护肤确认' : '晚间护肤确认';
-  document.getElementById('confirm-msg').textContent = msg;
-  document.getElementById('skincare-confirm').classList.add('show');
-}
-function closeConfirm() { document.getElementById('skincare-confirm').classList.remove('show'); pendingSkincare=null; }
-function doConfirmSkincare() {
-  if (!pendingSkincare) return;
-  const data=getToday(),key=getTodayKey();
-  data[key].skincare[pendingSkincare]={done:true,time:new Date().toISOString()};
-  setStorage(data); closeConfirm(); renderSkincare(); updateStats(); renderHistory();
-}
-function skipSkincare(session) {
-  const msgs = session==='morning'
-    ? ['今天早上跳过了……晚上一定要补回来','偶尔一次没关系，但不能变成习惯哦','行吧，懒了一次，晚上不许再跳']
-    : ['晚上跳过？明天早上一定要认真！','今晚懒掉了……皮肤自己修复效率最低哦','好吧，但明天要加倍认真'];
-  const data=getToday(),key=getTodayKey();
-  data[key].skincare[session]={done:false,skipped:true,msg:msgs[Math.floor(Math.random()*msgs.length)]};
-  setStorage(data); renderSkincare(); updateStats(); renderHistory();
+  document.getElementById('confirm-msg').textContent = CONFIRM_MSGS[Math.floor(Math.random()*CONFIRM_MSGS.length)];
+  showModal('modal-confirm');
 }
 
-function toggleSkincare(session) {
-  const el=document.getElementById('skincare-'+session);
-  const icon=document.getElementById('toggle-'+session);
-  const open=el.classList.toggle('open');
-  icon.style.transform=open?'rotate(180deg)':'';
-}
-function toggleHistory() {
-  const el=document.getElementById('history-list');
-  const icon=document.getElementById('history-toggle');
-  const open=el.classList.toggle('open');
-  icon.style.transform=open?'rotate(180deg)':'';
-  if(open) renderHistory();
+async function doConfirmSkincare() {
+  const session = pendingSkincareSession;
+  closeModal('modal-confirm');
+  const today = todayStr();
+  const row = { date: today, session, done: true, skipped: false, created_at: new Date().toISOString() };
+  const existing = await supa('GET','skincare_logs',null,`?date=eq.${today}&session=eq.${session}&select=id`);
+  if (existing && existing.length>0) await supa('PATCH','skincare_logs',row,`?date=eq.${today}&session=eq.${session}`);
+  else await supa('POST','skincare_logs',row);
+  state.skincare[session] = row;
+  renderSkincare();
+  updateStats();
+  showPraise(session==='morning'?'skincare_morning':'skincare_night');
 }
 
-function renderTasks() {
-  const data=getToday(),key=getTodayKey(),tasks=data[key].tasks||{};
+const SKIP_MSGS = {
+  morning: ['今天早上跳过了……晚上一定要补回来','偶尔一次没关系，但不能变成习惯哦','行吧，懒了一次，晚上不许再跳了'],
+  night: ['晚上跳过？明天早上一定要认真！','今晚懒掉了……明天加倍认真','好吧，但明天要补回来'],
+};
+
+async function skipSkincare(session) {
+  const today = todayStr();
+  const msgs = SKIP_MSGS[session];
+  const row = { date: today, session, done: false, skipped: true, skip_reason: msgs[Math.floor(Math.random()*msgs.length)], created_at: new Date().toISOString() };
+  const existing = await supa('GET','skincare_logs',null,`?date=eq.${today}&session=eq.${session}&select=id`);
+  if (existing && existing.length>0) await supa('PATCH','skincare_logs',row,`?date=eq.${today}&session=eq.${session}`);
+  else await supa('POST','skincare_logs',row);
+  state.skincare[session] = row;
+  renderSkincare();
+  updateStats();
+}
+
+// ── WATER ──
+async function setWater(n) {
+  const today = todayStr();
+  const cups = state.water===n ? n-1 : n;
+  state.water = cups;
+  renderWater();
+  const existing = await supa('GET','water_logs',null,`?date=eq.${today}&select=id`);
+  if (existing && existing.length>0) await supa('PATCH','water_logs',{cups},`?date=eq.${today}`);
+  else await supa('POST','water_logs',{date:today,cups});
+  if (cups>=8) showPraise('water8');
+}
+
+// ── PERIOD ──
+let periodAction = null;
+function showPeriodModal(action) {
+  periodAction = action;
+  if (action==='start') {
+    document.getElementById('period-modal-title').textContent = '记录经期开始';
+    document.getElementById('period-modal-msg').textContent = '确认今天开始了吗？将记录今天为新一次经期的开始日期。';
+  } else {
+    document.getElementById('period-modal-title').textContent = '记录经期结束';
+    document.getElementById('period-modal-msg').textContent = '确认今天结束了吗？将记录今天为本次经期的结束日期。';
+  }
+  showModal('modal-period');
+}
+
+async function confirmPeriodAction() {
+  closeModal('modal-period');
+  const today = todayStr();
+  if (periodAction==='start') {
+    const row = { start_date: today, created_at: new Date().toISOString() };
+    const res = await supa('POST','period_logs',row);
+    if (res && res.length) state.period = res[0];
+  } else if (periodAction==='end' && state.period) {
+    await supa('PATCH','period_logs',{end_date:today},`?id=eq.${state.period.id}`);
+    state.period = { ...state.period, end_date: today };
+  }
+  renderPeriod();
+}
+
+// ── RENDER ──
+function renderMeals() {
   ['breakfast','lunch','dinner'].forEach(t => {
-    const card=document.getElementById('task-'+t);
-    const status=getStatus(t);
+    const card = document.getElementById('task-'+t);
     card.classList.remove('done','locked');
-    if(tasks[t]) { card.classList.add('done'); }
-    else if(status==='locked') { card.classList.add('locked'); }
+    if (state.meals[t]) card.classList.add('done');
+    else if (getStatus(t)==='locked') card.classList.add('locked');
   });
 }
+
 function renderSkincare() {
-  const data=getToday(),key=getTodayKey(),sc=data[key].skincare||{};
   ['morning','night'].forEach(s => {
-    const check=document.getElementById(s+'-check');
-    if(sc[s]&&sc[s].done) check.classList.add('done'); else check.classList.remove('done');
+    const check = document.getElementById(s+'-check');
+    if (state.skincare[s]?.done) check.classList.add('done'); else check.classList.remove('done');
   });
 }
+
 function renderSkincareSteps() {
-  function build(id, steps) {
-    document.getElementById(id).innerHTML=steps.map((s,i)=>`
-      <div class="step-row">
+  function buildSteps(containerId, steps) {
+    document.getElementById(containerId).innerHTML = steps.map((s,i) => {
+      const isConflict = s.type==='conflict-skip';
+      const isWeekly = s.type==='weekly';
+      return `<div class="step-row${isConflict?' skip-today':''}">
         <div class="step-num">${i+1}</div>
-        <div class="step-name">${s.name} <span class="step-note">${s.note}</span></div>
-        ${s.when==='weekly'?'<span style="font-size:10px;background:var(--amber-light);color:var(--amber);padding:2px 7px;border-radius:20px;font-weight:500;">每周</span>':''}
-      </div>`).join('');
+        <div class="step-name">${s.name}<span class="step-note">${s.note}</span></div>
+        ${isWeekly ? '<span class="weekly-badge">今日</span>' : ''}
+        ${isConflict ? '<span class="conflict-badge">冲突跳过</span>' : ''}
+      </div>`;
+    }).join('');
   }
-  build('steps-morning',MORNING_STEPS); build('steps-night',NIGHT_STEPS);
+  buildSteps('steps-morning', getMorningSessions());
+  buildSteps('steps-night', getNightSessions());
 }
-function renderBadges() {
-  ['breakfast','lunch','dinner'].forEach(t=>{
-    const el=document.getElementById('badge-'+t);
-    const b=getBadge(t); el.textContent=b.text; el.className='task-time '+b.cls;
-  });
-  ['morning-skincare','night-skincare'].forEach(t=>{
-    const el=document.getElementById('badge-'+t);
-    const b=getBadge(t); el.textContent=b.text; el.className='task-time '+b.cls;
-  });
-}
+
 function renderWater() {
-  const data=getToday(),key=getTodayKey(),count=data[key].water||0;
-  document.getElementById('water-drops').innerHTML=Array.from({length:8},(_,i)=>
+  const count = state.water;
+  document.getElementById('water-drops').innerHTML = Array.from({length:8},(_,i)=>
     `<div class="drop${i<count?' filled':''}" onclick="setWater(${i+1})"></div>`).join('');
-  document.getElementById('water-num').textContent=count;
+  document.getElementById('water-num').textContent = count;
 }
-function setWater(n) {
-  const data=getToday(),key=getTodayKey();
-  data[key].water=data[key].water===n?n-1:n;
-  setStorage(data); renderWater();
-}
+
 function renderPeriod() {
-  const last=new Date('2026-05-16'),today=new Date();
-  const daysSince=Math.floor((today-last)/86400000);
-  const cycle=30,pLen=7,daysInto=daysSince%cycle,nextStart=cycle-daysInto;
-  let status,pill;
-  if(daysInto<pLen){status=`经期第 ${daysInto+1} 天，还有约 ${pLen-daysInto} 天结束`;pill='<span class="period-pill active">经期中</span>';}
-  else if(nextStart<=5){status=`距下次经期还有 ${nextStart} 天，快来了`;pill='<span class="period-pill soon">即将来临</span>';}
-  else{status=`距下次经期还有约 ${nextStart} 天`;pill='<span class="period-pill normal">安全期</span>';}
-  const nd=new Date(today); nd.setDate(nd.getDate()+nextStart);
-  document.getElementById('period-card').innerHTML=`
-    <div class="period-row">${pill}<span style="font-size:12px;color:var(--text-muted);">上次：5月16日</span></div>
-    <div style="font-size:13px;margin-bottom:6px;">${status}</div>
-    <div class="period-row"><span style="font-size:13px;color:var(--text-muted);">预计下次</span><span style="font-size:13px;font-weight:500;">${nd.getMonth()+1}月${nd.getDate()}日</span></div>
-    <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">周期约 30 天 · 经期约 7 天</div>`;
-}
-function updateStats() {
-  const data=getStorage(),keys=Object.keys(data).sort();
-  let total=0,streak=0;
-  const weekAgo=new Date(); weekAgo.setDate(weekAgo.getDate()-7);
-  let wDone=0,wTotal=0;
-  keys.forEach(k=>{
-    const d=data[k];
-    const any=Object.keys(d.tasks||{}).length>0||Object.keys(d.skincare||{}).length>0;
-    if(any) total++;
-    const kd=new Date(k);
-    if(kd>=weekAgo){
-      wTotal+=5;
-      wDone+=Object.keys(d.tasks||{}).length;
-      if(d.skincare?.morning?.done) wDone++;
-      if(d.skincare?.night?.done) wDone++;
+  const el = document.getElementById('period-card');
+  const today = new Date();
+  let html = '';
+
+  if (state.period) {
+    const start = new Date(state.period.start_date);
+    const daysSince = Math.floor((today - start) / 86400000);
+    const hasEnded = !!state.period.end_date;
+
+    if (!hasEnded && daysSince <= 10) {
+      // Currently in period
+      html = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span class="period-pill active">经期中</span>
+          <span style="font-size:12px;color:var(--text-muted);">第 ${daysSince+1} 天</span>
+        </div>
+        <div style="font-size:13px;margin-bottom:4px;">开始于 ${state.period.start_date}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">预计还有约 ${Math.max(0,7-daysSince)} 天结束</div>
+        <div class="period-btns">
+          <button class="period-btn primary" onclick="showPeriodModal('end')">记录结束</button>
+        </div>`;
+    } else {
+      // Predict next
+      const endDate = hasEnded ? new Date(state.period.end_date) : new Date(start.getTime() + 7*86400000);
+      const nextStart = new Date(start.getTime() + 30*86400000);
+      const daysToNext = Math.ceil((nextStart - today) / 86400000);
+      const soon = daysToNext <= 5 && daysToNext >= 0;
+      const pillClass = soon ? 'soon' : 'normal';
+      const pillText = soon ? '即将来临' : '安全期';
+      html = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span class="period-pill ${pillClass}">${pillText}</span>
+          <span style="font-size:12px;color:var(--text-muted);">上次：${state.period.start_date}</span>
+        </div>
+        <div style="font-size:13px;margin-bottom:4px;">${daysToNext>0?`距下次约 ${daysToNext} 天`:'预计今天或已到'}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:12px;">预计下次：${nextStart.getMonth()+1}月${nextStart.getDate()}日</div>
+        <div class="period-btns">
+          <button class="period-btn primary" onclick="showPeriodModal('start')">来了！记录开始</button>
+        </div>`;
     }
-  });
-  let s=0;
-  for(let i=keys.length-1;i>=0;i--){
-    const d=data[keys[i]];
-    if(Object.keys(d.tasks||{}).length>0||Object.keys(d.skincare||{}).length>0) s++; else break;
+  } else {
+    html = `
+      <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">还没有记录，点下面开始追踪</div>
+      <div class="period-btns">
+        <button class="period-btn primary" onclick="showPeriodModal('start')">来了！记录开始</button>
+      </div>`;
   }
-  document.getElementById('streak-days').textContent=s;
-  document.getElementById('total-days').textContent=total;
-  document.getElementById('complete-rate').textContent=wTotal?Math.round(wDone/wTotal*100)+'%':'0%';
+  el.innerHTML = html;
 }
-function renderHistory() {
-  const data=getStorage(),keys=Object.keys(data).sort().reverse();
-  const el=document.getElementById('history-items');
-  if(!keys.length){el.innerHTML='<div style="padding:1.5rem;text-align:center;font-size:13px;color:var(--text-muted);">还没有记录</div>';return;}
-  el.innerHTML=keys.map(k=>{
-    const d=data[k],tags=[];
-    if(d.tasks?.breakfast) tags.push(`<span class="history-tag h-done">早餐${d.tasks.breakfast.late?'(补)':''}</span>`);
-    if(d.tasks?.lunch) tags.push(`<span class="history-tag h-done">午餐${d.tasks.lunch.late?'(补)':''}</span>`);
-    if(d.tasks?.dinner) tags.push(`<span class="history-tag h-done">晚餐${d.tasks.dinner.late?'(补)':''}</span>`);
-    if(d.skincare?.morning?.done) tags.push('<span class="history-tag h-done">早间护肤</span>');
-    if(d.skincare?.morning?.skipped) tags.push('<span class="history-tag h-skip">跳过早间</span>');
-    if(d.skincare?.night?.done) tags.push('<span class="history-tag h-done">晚间护肤</span>');
-    if(d.skincare?.night?.skipped) tags.push('<span class="history-tag h-skip">跳过晚间</span>');
-    if(d.water) tags.push(`<span class="history-tag h-note">喝水${d.water}杯</span>`);
+
+function renderBadges() {
+  renderBadge('badge-breakfast','breakfast');
+  renderBadge('badge-lunch','lunch');
+  renderBadge('badge-dinner','dinner');
+  renderBadge('badge-morning-sc','morning-sc');
+  renderBadge('badge-night-sc','night-sc');
+}
+
+async function updateStats() {
+  // Fetch last 30 days
+  const d30 = new Date(); d30.setDate(d30.getDate()-30);
+  const d30str = d30.toISOString().split('T')[0];
+  const meals = await supa('GET','meal_logs',null,`?date=gte.${d30str}&select=date,meal_type`);
+  const sc = await supa('GET','skincare_logs',null,`?date=gte.${d30str}&select=date,session,done`);
+  if (!meals || !sc) return;
+
+  // Build per-day map
+  const dayMap = {};
+  meals.forEach(m => { if(!dayMap[m.date]) dayMap[m.date]={}; dayMap[m.date][m.meal_type]=true; });
+  sc.forEach(s => { if(!dayMap[s.date]) dayMap[s.date]={}; if(s.done) dayMap[s.date]['sc_'+s.session]=true; });
+
+  const days = Object.keys(dayMap).sort();
+  const total = days.length;
+
+  // Streak
+  let streak = 0;
+  const today = todayStr();
+  for (let i=days.length-1; i>=0; i--) {
+    const d = days[i];
+    const hasAny = Object.keys(dayMap[d]).length > 0;
+    if (hasAny) streak++; else break;
+  }
+
+  // This week rate
+  const weekStart = new Date(); weekStart.setDate(weekStart.getDate()-6);
+  const weekDays = days.filter(d => d >= weekStart.toISOString().split('T')[0]);
+  let done=0, possible=weekDays.length*5;
+  weekDays.forEach(d => { done += Object.keys(dayMap[d]).length; });
+  const rate = possible>0 ? Math.round(done/possible*100) : 0;
+
+  document.getElementById('streak-days').textContent = streak;
+  document.getElementById('total-days').textContent = total;
+  document.getElementById('complete-rate').textContent = rate+'%';
+
+  // Streak milestones
+  if (streak===3) showPraise('streak3');
+  else if (streak===7) showPraise('streak7');
+  else if (streak===14) showPraise('streak14');
+}
+
+async function renderHistory() {
+  const d14 = new Date(); d14.setDate(d14.getDate()-14);
+  const d14str = d14.toISOString().split('T')[0];
+  const [meals, sc, water] = await Promise.all([
+    supa('GET','meal_logs',null,`?date=gte.${d14str}&select=date,meal_type,late&order=date.desc`),
+    supa('GET','skincare_logs',null,`?date=gte.${d14str}&select=date,session,done,skipped&order=date.desc`),
+    supa('GET','water_logs',null,`?date=gte.${d14str}&select=date,cups&order=date.desc`),
+  ]);
+  const dayMap = {};
+  const addDay = d => { if(!dayMap[d]) dayMap[d]={meals:[],sc:[],water:0}; };
+  (meals||[]).forEach(m => { addDay(m.date); dayMap[m.date].meals.push(m); });
+  (sc||[]).forEach(s => { addDay(s.date); dayMap[s.date].sc.push(s); });
+  (water||[]).forEach(w => { addDay(w.date); dayMap[w.date].water=w.cups; });
+
+  const el = document.getElementById('history-items');
+  const days = Object.keys(dayMap).sort().reverse();
+  if (!days.length) { el.innerHTML='<div style="padding:1.5rem;text-align:center;font-size:13px;color:var(--text-muted);">还没有记录</div>'; return; }
+
+  el.innerHTML = days.map(d => {
+    const data = dayMap[d];
+    const tags = [];
+    data.meals.forEach(m => {
+      const names = {breakfast:'早餐',lunch:'午餐',dinner:'晚餐'};
+      tags.push(`<span class="history-tag h-done">${names[m.meal_type]||m.meal_type}${m.late?'(补)':''}</span>`);
+    });
+    data.sc.forEach(s => {
+      const names = {morning:'早间护肤',night:'晚间护肤'};
+      if(s.done) tags.push(`<span class="history-tag h-done">${names[s.session]}</span>`);
+      else if(s.skipped) tags.push(`<span class="history-tag h-skip">跳过${s.session==='morning'?'早间':'晚间'}</span>`);
+    });
+    if(data.water>0) tags.push(`<span class="history-tag h-note">喝水${data.water}杯</span>`);
     if(!tags.length) return '';
-    return `<div class="history-item"><div class="history-date">${k}</div><div class="history-tags">${tags.join('')}</div></div>`;
-  }).filter(Boolean).join('')||'<div style="padding:1.5rem;text-align:center;font-size:13px;color:var(--text-muted);">还没有记录</div>';
+    return `<div class="history-item"><div class="history-date">${d}</div><div class="history-tags">${tags.join('')}</div></div>`;
+  }).filter(Boolean).join('') || '<div style="padding:1.5rem;text-align:center;font-size:13px;color:var(--text-muted);">还没有记录</div>';
 }
 
-document.getElementById('late-modal').addEventListener('click',function(e){if(e.target===this)this.classList.remove('show');});
-document.getElementById('skincare-confirm').addEventListener('click',function(e){if(e.target===this)closeConfirm();});
+// ── MODAL HELPERS ──
+function showModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function toggleSection(id) {
+  const el = document.getElementById(id);
+  const icon = document.getElementById('icon-'+id);
+  const open = el.classList.toggle('open');
+  if(icon) icon.style.transform = open?'rotate(180deg)':'';
+  if (id==='history-list' && open) renderHistory();
+}
 
-function init() {
+// Close modals on overlay click
+['modal-confirm','modal-late','modal-period'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)closeModal(id);});
+});
+
+// ── LOAD TODAY DATA ──
+async function loadToday() {
+  const today = todayStr();
+  const [meals, sc, water, period] = await Promise.all([
+    supa('GET','meal_logs',null,`?date=eq.${today}&select=*`),
+    supa('GET','skincare_logs',null,`?date=eq.${today}&select=*`),
+    supa('GET','water_logs',null,`?date=eq.${today}&select=*`),
+    supa('GET','period_logs',null,`?order=created_at.desc&limit=1&select=*`),
+  ]);
+  (meals||[]).forEach(m => state.meals[m.meal_type]=m);
+  (sc||[]).forEach(s => state.skincare[s.session]=s);
+  state.water = (water&&water[0]) ? water[0].cups : 0;
+  state.period = (period&&period[0]) ? period[0] : null;
+}
+
+// ── INIT ──
+async function init() {
   const d=new Date(),days=['日','一','二','三','四','五','六'];
   document.getElementById('today-date').textContent=`${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 · 星期${days[d.getDay()]}`;
-  renderSkincareSteps(); renderTasks(); renderSkincare(); renderWater(); renderPeriod(); updateStats(); renderBadges();
-  setInterval(()=>{ renderBadges(); renderTasks(); },60000);
+  renderSkincareSteps();
+  renderBadges();
+  renderWater();
+  await loadToday();
+  renderMeals();
+  renderSkincare();
+  renderWater();
+  renderPeriod();
+  updateStats();
+  setInterval(()=>{ renderBadges(); renderMeals(); }, 60000);
 }
+
 init();
 </script>
 </body>
